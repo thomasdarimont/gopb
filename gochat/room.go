@@ -24,9 +24,6 @@ type room struct {
 	clients map[*client]bool
 
 	tracer trace.Tracer
-
-	// avatar is how avatar information will be obtained.
-	avatar Avatar
 }
 
 func (r *room) run() {

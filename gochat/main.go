@@ -53,7 +53,7 @@ func main() {
 	var addr = flag.String("addr", ":8080", "The addr of the application.")
 	var secretKey = flag.String("secret", "changeme", "The omniauth hash secret")
 
-	var googleClientId = os.Getenv("GOOGLE_CLIENT_ID")
+	var googleClientID = os.Getenv("GOOGLE_CLIENT_ID")
 	var googleClientSecret = os.Getenv("GOOGLE_CLIENT_SECRET")
 
 	flag.Parse()
@@ -62,7 +62,7 @@ func main() {
 	gomniauth.WithProviders(
 		facebook.New("key", "secret", "http://localhost:8080/auth/callback/facebook"),
 		github.New("key", "secret", "http://localhost:8080/auth/callback/github"),
-		google.New(googleClientId, googleClientSecret, "http://localhost:8080/auth/callback/google"),
+		google.New(googleClientID, googleClientSecret, "http://localhost:8080/auth/callback/google"),
 	)
 
 	r := newRoom()

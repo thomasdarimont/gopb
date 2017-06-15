@@ -15,7 +15,7 @@ func TestAuthAvatar(t *testing.T) {
 	testUser.On("AvatarURL").Return("", ErrNoAvatarURL)
 	testChatUser := &chatUser{User: testUser}
 
-	url, err := authAvatar.GetAvatarURL(testChatUser)
+	_, err := authAvatar.GetAvatarURL(testChatUser)
 	if err != ErrNoAvatarURL {
 		t.Error("AuthAvatar.GetAvatarURL should return ErrNoAvatar when no value present")
 	}
@@ -25,7 +25,7 @@ func TestAuthAvatar(t *testing.T) {
 	testUser = &gomniauthtest.TestUser{}
 	testChatUser.User = testUser
 	testUser.On("AvatarURL").Return(testURL, nil)
-	url, err = authAvatar.GetAvatarURL(testChatUser)
+	url, err := authAvatar.GetAvatarURL(testChatUser)
 	if err != nil {
 		t.Error("AuthAvatar.GetAvatarURL should return no error when value present")
 	}

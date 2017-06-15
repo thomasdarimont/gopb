@@ -8,7 +8,8 @@ import (
 )
 
 func uploaderHandler(w http.ResponseWriter, r *http.Request) {
-	userId := r.FormValue("userId")
+
+	userID := r.FormValue("userID")
 	file, header, err := r.FormFile("avatarFile")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -21,7 +22,7 @@ func uploaderHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	filename := path.Join("avatars", userId+path.Ext(header.Filename))
+	filename := path.Join("avatars", userID+path.Ext(header.Filename))
 	err = ioutil.WriteFile(filename, data, 0777)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
