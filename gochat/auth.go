@@ -5,6 +5,9 @@ import (
 	"net/http"
 	"strings"
 
+	"crypto/md5"
+	"io"
+
 	"github.com/stretchr/gomniauth"
 	"github.com/stretchr/objx"
 )
@@ -14,8 +17,10 @@ type authHandler struct {
 }
 
 func (h *authHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	_, err := r.Cookie("auth")
-	if err == http.ErrNoCookie {
+
+	cookie, err := r.Cookie("auth")
+
+	if err == http.ErrNoCookie || cookie.Value == "" {
 		// not authenticated
 		w.Header().Set("location", "/login")
 		w.WriteHeader(http.StatusTemporaryRedirect)
@@ -78,14 +83,23 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, fmt.Sprintf("error when trying to get user for %s: %s", provider, err), http.StatusInternalServerError)
 			return
 		}
+
+		m := md5.New()
+		io.WriteString(m, strings.ToLower(user.Email()))
+		userId := fmt.Sprintf("%x", m.Sum(nil))
 		authCookieValue := objx.New(map[string]interface{}{
-			"name": user.Name(),
+			"userId":     userId,
+			"name":       user.Name(),
+			"avatar_url": user.AvatarURL(),
+			"email":      user.Email(),
 		}).MustBase64()
+
 		http.SetCookie(w, &http.Cookie{
 			Name:  "auth",
 			Value: authCookieValue,
 			Path:  "/",
 		})
+
 		w.Header().Set("location", "/chat")
 		w.WriteHeader(http.StatusTemporaryRedirect)
 	default:

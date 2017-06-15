@@ -17,6 +17,8 @@ import (
 	"github.com/stretchr/objx"
 )
 
+import _ "expvar"
+
 type templateHandler struct {
 	once     sync.Once
 	filename string
@@ -56,11 +58,29 @@ func main() {
 		google.New(googleClientId, googleClientSecret, "http://localhost:8080/auth/callback/google"),
 	)
 
-	r := newRoom()
+	//r := newRoom(UseAuthAvatar)
+	//r := newRoom(UseGravatar)
+	r := newRoom(UserFileSystemAvatar)
 	//r.tracer = trace.New(os.Stdout)
 
+	http.Handle("/assets/", http.StripPrefix("/assets", http.FileServer(http.Dir("./assets/"))))
+
+	http.Handle("/avatars/", http.StripPrefix("/avatars/", http.FileServer(http.Dir("./avatars"))))
+
+	http.Handle("/upload", &templateHandler{filename: "upload.html"})
+	http.HandleFunc("/uploader", uploaderHandler)
 	http.Handle("/chat", MustAuth(&templateHandler{filename: "chat.html"}))
 	http.Handle("/login", &templateHandler{filename: "login.html"})
+	http.HandleFunc("/logout", func(w http.ResponseWriter, req *http.Request) {
+		http.SetCookie(w, &http.Cookie{
+			Name:   "auth",
+			Value:  "",
+			Path:   "/",
+			MaxAge: -1,
+		})
+		w.Header().Set("location", "/chat")
+		w.WriteHeader(http.StatusTemporaryRedirect)
+	})
 	http.HandleFunc("/auth/", loginHandler)
 	http.Handle("/room", r)
 

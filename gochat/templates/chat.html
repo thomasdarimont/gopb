@@ -3,24 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <title>Chat</title>
-    <style>
-        input {
-            display: block;
-        }
-
-        ul {
-            list-style: none;
-        }
-    </style>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
+          integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <link rel="stylesheet" href="/assets/css/main.css">
 </head>
 <body>
-<h1>Chat</h1>
-<ul id="messages"></ul>
-<form id="chatbox">
-    {{.UserData.name}}:<br/>
-    <textarea></textarea>
-    <input type="submit" value="Send">
+
+<div class="container">
+    <div class="panel panel-default">
+        <div class="panel-body">
+            <ul id="messages"></ul>
+        </div>
+    </div>
+</div>
+
+<form action="" id="chatbox" role="form">
+    <div class="form-group">
+        <label for="message">Send a message as {{.UserData.name}}</label>
+        or <a href="/logout">Sign out</a>
+        <textarea id="message" class="form-control"></textarea>
+    </div>
+    <input type="submit" value="Send" class="btn btn-default"/>
 </form>
+
 </body>
 <script>
 
@@ -53,10 +58,16 @@
             let li = document.createElement("li");
             let name = document.createElement("strong");
             let message = document.createElement("span");
+            let avatar = document.createElement("img");
 
             name.textContent = msg.Name + ": ";
             message.textContent = msg.Message;
+            avatar.style.width = "50px";
+            avatar.style.verticalAlign = "middle";
+            avatar.title = msg.Name;
+            avatar.src = msg.AvatarURL;
 
+            li.appendChild(avatar);
             li.appendChild(name);
             li.appendChild(message);
 
