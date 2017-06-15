@@ -10,7 +10,24 @@ import (
 
 	"github.com/stretchr/gomniauth"
 	"github.com/stretchr/objx"
+
+	"github.com/prometheus/common/log"
+	gominiauthcommon "github.com/stretchr/gomniauth/common"
 )
+
+type ChatUser interface {
+	UniqueID() string
+	AvatarURL() string
+}
+
+type chatUser struct {
+	gominiauthcommon.User
+	uniqueID string
+}
+
+func (u chatUser) UniqueID() string {
+	return u.uniqueID
+}
 
 type authHandler struct {
 	next http.Handler
@@ -58,13 +75,13 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, fmt.Sprintf("error when trying to get provider %s: %s", provider, err), http.StatusBadRequest)
 			return
 		}
-		loginUrl, err := provider.GetBeginAuthURL(nil, nil)
+		loginURL, err := provider.GetBeginAuthURL(nil, nil)
 		if err != nil {
 			http.Error(w, fmt.Sprintf("Error when trying to GetBeginAuthURL for %s: %s", provider, err), http.StatusInternalServerError)
 			return
 		}
 
-		w.Header().Set("location", loginUrl)
+		w.Header().Set("location", loginURL)
 		w.WriteHeader(http.StatusTemporaryRedirect)
 	case "callback":
 		provider, err := gomniauth.Provider(provider)
@@ -84,14 +101,20 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
+		chatUser := &chatUser{User: user}
 		m := md5.New()
 		io.WriteString(m, strings.ToLower(user.Email()))
-		userId := fmt.Sprintf("%x", m.Sum(nil))
+		chatUser.uniqueID = fmt.Sprintf("%x", m.Sum(nil))
+		avatarURL, err := avatars.GetAvatarURL(chatUser)
+
+		if err != nil {
+			log.Fatalln("Error when trying to GetAuthURL", "-", err)
+		}
+
 		authCookieValue := objx.New(map[string]interface{}{
-			"userId":     userId,
+			"userId":     chatUser.uniqueID,
 			"name":       user.Name(),
-			"avatar_url": user.AvatarURL(),
-			"email":      user.Email(),
+			"avatar_url": avatarURL,
 		}).MustBase64()
 
 		http.SetCookie(w, &http.Cookie{

@@ -19,6 +19,13 @@ import (
 
 import _ "expvar"
 
+// set the active Avatar implementation
+var avatars Avatar = TryAvatars{
+	UserFileSystemAvatar,
+	UseAuthAvatar,
+	UseGravatar,
+}
+
 type templateHandler struct {
 	once     sync.Once
 	filename string
@@ -58,9 +65,7 @@ func main() {
 		google.New(googleClientId, googleClientSecret, "http://localhost:8080/auth/callback/google"),
 	)
 
-	//r := newRoom(UseAuthAvatar)
-	//r := newRoom(UseGravatar)
-	r := newRoom(UserFileSystemAvatar)
+	r := newRoom()
 	//r.tracer = trace.New(os.Stdout)
 
 	http.Handle("/assets/", http.StripPrefix("/assets", http.FileServer(http.Dir("./assets/"))))
