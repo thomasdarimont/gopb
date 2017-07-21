@@ -28,7 +28,6 @@ cd ..
 echo Building domainfinder
 go build -o domainfinder
 
-
 echo Done.
 
 
